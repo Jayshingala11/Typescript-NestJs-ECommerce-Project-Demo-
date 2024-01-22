@@ -1,0 +1,142 @@
+<main id="cart-container">
+  <ul class="cart__item-list">
+    <li class="cart__item">
+      <h1>
+        Dummy
+      </h1>
+      <h2>Quantity:- 0
+      </h2>
+      <form action="/cart-delete-item" method="POST">
+        <input type="hidden" value="<%= p.id %>" name="productId" />
+        <input type="hidden" name="token" value="<%= Token %>" />
+        <button type="submit" class="btn danger deleteCart">Delete</button>
+      </form>
+    </li>
+  </ul>
+  <hr />
+  {{#if isAuthenticated}}
+  <div class="centered">
+    <a class="btn" href="/order/checkout">Order Now!</a>
+  </div>
+  {{/if}}
+
+  <script>
+    
+    $(document).ready(function () {
+      if (isAuthenticated) {
+        $.ajax({
+          url: '/cart/get-cart',
+          type: 'GET',
+          success: function (response) {
+            if (response.success) {
+              const cartItems = response.cartItems;
+              if (cartItems.length) {
+                $('.cart__item-list').empty();
+                cartItems.forEach(function (item) {
+                  appendCart(item);
+                })
+              } else {
+                let html = `
+                  <h1>No products in cart!</h1>
+                `;
+                $('#cart-container').empty();
+                $('#cart-container').append(html);
+              }
+            }
+          },
+          error: function (error) {
+            console.error("Error getting fetching cart!", error);
+          }
+        })
+      } else {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        if (cart.length) {
+          $('.cart__item-list').empty();
+          cart.forEach(function (item) {
+            appendLocalCart(item);
+          })
+        } else {
+          let html = `
+            <h1>No products in cart!</h1>
+          `;
+          $('#cart-container').empty();
+          $('#cart-container').append(html);
+        }
+      }
+    })
+
+    $(document).ready(function () {
+      $('.cart__item-list').on('click', '.deleteCart', function (event) {
+        event.preventDefault();
+
+        const prodId = $(this).closest('.cart__item').find("input[name='prodId']").val();
+        const deleteCart = $(this);
+
+        if (isAuthenticated) {
+          $.ajax({
+            url: '/cart/delete-cartItem',
+            type: 'DELETE',
+            data: { prodId },
+            success: function (response) {
+              if (response.success) {
+                deleteCart.closest('.cart__item').remove();
+                location.reload();
+              }
+            },
+            error: function (error) {
+              console.error("Error getting deleting cartItem!", error);
+            }
+          })
+        } else {
+          let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+          cart = cart.filter(item => item.id !== prodId);
+          localStorage.setItem('cart', JSON.stringify(cart));
+
+          deleteCart.closest('.cart__item').remove();
+
+          if (cart.length === 0) {
+            location.reload();
+          }
+        }
+      })
+    })
+
+    function appendCart (data) {
+      let html = `
+        <li class="cart__item">
+        <h1>
+          ${data.product.title}
+        </h1>
+        <h2>Quantity:- ${data.quantity}
+        </h2>
+        <form action=" method="">
+          <input type="hidden" name="prodId" value="${data.product.id}" />
+          <input type="hidden" name="token" value="<%= Token %>" />
+          <button type="submit" class="btn danger deleteCart">Delete</button>
+        </form>
+        </li>
+      `;
+      $('.cart__item-list').append(html);
+    }
+
+    function appendLocalCart (data) {
+      let html = `
+        <li class="cart__item">
+        <h1>
+          ${data.title}
+        </h1>
+        <h2>Quantity:- ${data.quantity}
+        </h2>
+        <form action=" method="">
+          <input type="hidden" name="prodId" value="${data.id}" />
+          <input type="hidden" name="token" value="<%= Token %>" />
+          <button type="submit" class="btn danger deleteCart">Delete</button>
+        </form>
+        </li>
+      `;
+      $('.cart__item-list').append(html);
+    }
+  </script>
+</main>

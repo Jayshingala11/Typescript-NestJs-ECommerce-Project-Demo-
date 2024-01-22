@@ -1,0 +1,60 @@
+<main id="admin-product">
+  {{!-- {{log products}} --}}
+    {{#if products}}
+    <div class="grid">
+        {{#each products}}
+        <article class="card product-item">
+            <header class="card__header">
+                <h1 class="product__title">
+                    {{this.title}}
+                </h1>
+            </header>
+            <div class="card__image">
+                <img src="{{this.imageUrl}}" alt="{{this.title}}" />
+            </div>
+            <div class="card__content">
+                <h2 class="product__price">${{this.price}}
+                </h2>
+                <p class="product__description">
+                    {{this.description}}
+                </p>
+            </div>
+            <div class="card__actions">
+                <a data-id="{{this.id}}" data-title="{{this.title}}"
+                    data-price="{{this.price}}" data-description="{{this.description}}" href=""
+                    class="btn editBtn">Edit</a>
+                <input type="hidden" value="<%= product.id %>" name="productId" />
+                <input type="hidden" name="token" value="<%= Token %>" />
+                <button class="btn deleteBtn" type="button" data-id="{{this.id}}">Delete</button>
+            </div>
+        </article>
+        {{/each}}
+    </div>
+    {{else}}
+    <h1>No Products Found!</h1>
+    {{/if}}
+
+
+  <script>
+    $(document).ready(function () {
+      const cartItem = JSON.parse(localStorage.getItem("cart")) || [];
+      console.log('CartItem :::', cartItem);
+
+      if (cartItem.length > 0) {
+        $.ajax({
+          url: "/cart/add-cart",
+          type: "POST",
+          data: { cartItem },
+          success: function (response) {
+            if (response.success) {
+              localStorage.removeItem("cart");
+            }
+          },
+          error: function (error) {
+            console.error("Error getting fetch cart in DB!", error);
+          },
+        });
+      }
+    })
+  </script>
+</main>

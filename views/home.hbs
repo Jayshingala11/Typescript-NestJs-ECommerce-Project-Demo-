@@ -1,0 +1,177 @@
+<main>
+  {{!-- {{log products}} --}}
+  {{#if products}}
+  <div class="grid" id="product-container" data-totalPage="{{totalPages}}">
+    {{#each products.[0]}}
+    <article class="card product-item">
+      <header class="card__header">
+        <h1 class="product__title">
+          {{this.title}}
+        </h1>
+      </header>
+      <div class="card__image">
+        <img src="{{this.imageUrl}}" alt="{{this.title}}" />
+      </div>
+      <div class="card__content">
+        <h2 class="product__price">${{this.price}}
+        </h2>
+        <p class="product__description">
+          {{this.description}}
+        </p>
+      </div>
+      <div class="card__actions">
+        <form action="" method="">
+          <input type="hidden" name="productId" value="{{this.id}}">
+          <input type="hidden" name="productTitle" value="{{this.title}}">
+          <button class="btn addtoCart" type="submit"> Add to Cart</button>
+        </form>
+      </div>
+    </article>
+  {{/each}}
+  </div>
+
+  <div class="pagination-container">
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+  </div>
+{{else}}
+<h1>No Products there!</h1>
+{{/if}}
+
+<script>
+
+  let currentPage = 1;
+  const totalPage = $('#product-container').attr('data-totalPage');
+
+  $(document).ready(function () {
+    $('#product-container').on('click', '.addtoCart', function (event) {
+      event.preventDefault();
+
+      const id = $(this).closest('form').find("input[name='productId']").val();
+      const title = $(this).closest('form').find("input[name='productTitle']").val();
+
+      if (isAuthenticated) {
+        $.ajax({
+          url: '/cart/add-cart',
+          type: 'POST',
+          data: {prodId : id},
+          success: function (response) {
+            if (response.success) {
+              window.location.href = '/cart';
+            }
+          },
+          error: function (error) {
+            console.error("Errot getting add to cart!", error);
+          }
+        })
+      } else {
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        const existingProduct = cart.findIndex(item => item.id === id);
+
+        if (existingProduct !== -1) {
+          cart[existingProduct].quantity += 1;
+        } else {
+          cart.push({ title, id, quantity: 1 });
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        window.location.href = '/cart';
+      }
+    })
+  })
+
+  $(document).ready(function () {
+
+    $('#prevBtn').click(function () {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchProducts({page: currentPage});
+      }
+    });
+
+    $('#nextBtn').click(function () {
+      if (currentPage < totalPage) {
+        currentPage++;
+        fetchProducts({page: currentPage});
+      }
+    });
+  })
+
+  function fetchProducts(data) {
+    $.ajax({
+      url: "/",
+      type: "POST",
+      data: {
+        page: data.page,
+        isajax: true
+      },
+      success: function (response) {
+        console.log("RES :::", response)
+        renderProducts(response);
+        updatePaginationControls(response.pagination);
+      },
+      error: function (error) {
+        console.error("Error getting fetch products!", error);
+      }
+    })
+  }
+
+    function renderProducts(response) {
+      if (response.success) {
+        if (Array.isArray(response.data)) {
+          console.log("response data :::", response.data);
+          $('#product-container').empty();
+          response.data.forEach(function (product) {
+            console.log("product :::", product)
+            product.forEach(function (product) {
+              appendProduct(product);
+            })
+        });
+        } else {
+          console.error('Invalid data format in response:', response);
+        }
+      } else {
+        console.error('Error fetching products:', response.message);
+      }
+    }
+
+  function appendProduct(product) {
+    let html = `
+        <article class="card product-item">
+        <header class="card__header">
+        <h1 class="product__title">
+          ${product.title}
+        </h1>
+        </header>
+        <div class="card__image">
+        <img src="${product.imageUrl}" alt="${product.title}" />
+        </div>
+        <div class="card__content">
+        <h2 class="product__price">$${product.price}
+        </h2>
+        <p class="product__description">
+          ${product.description}
+        </p>
+        </div>
+        <div class="card__actions">
+        <form action="" method="">
+        <input type="hidden" name="productId" value="${product.id}">
+        <input type="hidden" name="productTitle" value="${product.title}">
+        <button class="btn addtoCart" type="submit"> Add to Cart</button>
+        </form>
+        </div>
+        </article>
+    `;
+    $("#product-container").append(html);
+  }
+
+  function updatePaginationControls(pageInfo) {
+    $('#prevBtn').prop('disabled', pageInfo.currentPage === 1);
+    $('#nextBtn').prop('disabled', pageInfo.currentPage === pageInfo.totalPages);
+  }
+</script>
+</main>
+

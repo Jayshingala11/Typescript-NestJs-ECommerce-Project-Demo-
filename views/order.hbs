@@ -1,0 +1,21 @@
+<main>
+    {{#if orders.length}}
+    {{!-- {{log orders}} --}}
+    <ul class="orders">
+        {{#each orders}}
+        <li class="orders__item">
+            <h1>Order - # {{this.id}}</h1>
+            <ul class="orders__products">
+                {{#each this.orderItems}}
+                <li class="orders__products-item">
+                    {{this.product.title}}
+                    ({{this.quantity}})</li>
+                {{/each}}
+            </ul>
+        </li>
+        {{/each}}
+    </ul>
+    {{else}}
+    <h1>Nothing There!</h1>
+    {{/if}}
+</main>

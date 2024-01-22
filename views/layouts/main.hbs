@@ -1,0 +1,70 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{pageTitle}}</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheet/main.css" />
+    <link rel="stylesheet" type="text/css" href="/stylesheet/forms.css" />
+    <link rel="stylesheet" type="text/css" href="/stylesheet/order.css" />
+
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    ></script>
+  </head>
+  <body>
+
+    <div class="backdrop"></div>
+    <header class="main-header">
+      <button id="side-menu-toggle">Menu</button>
+      <nav class="main-header__nav">
+        <ul class="main-header__item-list">
+          <li class="main-header__item">
+            <a class="" href="/">Products</a>
+          </li>
+          <li class="main-header__item">
+            <a class="" href="/cart">Cart</a>
+          </li>
+          {{#if isAuthenticated}}
+          <li class="main-header__item">
+            <a class="" href="/orders">Orders</a>
+          </li>
+          <li class="main-header__item">
+            <a class="" href="/add-product">Add Product
+            </a>
+          </li>
+          <li class="main-header__item">
+            <a class="" href="/admin-products">Admin Products
+            </a>
+          </li>
+          {{/if}}
+        </ul>
+        <ul class="main-header__item-list">
+          {{#unless isAuthenticated}}
+          <li class="main-header__item">
+            <a class="" href="/auth/login">Login</a>
+          </li>
+          <li class="main-header__item">
+            <a class="" href="/auth/signup">Signup</a>
+          </li>
+          {{else}}
+          <li class="main-header__item">
+            <form action="/auth/logout" method="POST">
+              <input type="hidden" name="token" value="<%= Token %>" />
+              <button type="submit">Logout</button>
+            </form>
+          </li>
+          {{/unless}}
+        </ul>
+      </nav>
+    </header>
+
+    {{{body}}}
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin.js"></script>
+    <script>
+      const isAuthenticated = {{isAuthenticated}}
+      console.log("isAuthenticated :::", isAuthenticated);
+    </script>
+  </body>
+</html>

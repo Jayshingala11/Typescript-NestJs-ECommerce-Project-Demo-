@@ -1,0 +1,25 @@
+<main>
+  <ul class='cart__item-list'>
+    {{!-- {{log cartItems}} --}}
+    {{#each cartItems}}
+      <li class='cart__item'>
+        <h1>{{this.product.title}}</h1>
+        <h2>Quantity:- {{this.quantity}}</h2>
+      </li>
+    {{/each}}
+  </ul>
+  <div class='centered'>
+    <h2>Total : {{totalPrice}}</h2>
+  </div>
+  <div class='centered'>
+    <button id='order-btn' class='btn'>ORDER</button>
+    <script src='https://js.stripe.com/v3/'></script>
+    <script>
+      const stripe =
+      Stripe('pk_test_51Nl9QJSEAVgLgiq5mMxPxIgdMwoqvzdaAPsTYIyX5DIhme6jbly08tirgiYErpuTGqDPWQ8SDAo5TUEwNc3of2Gj00sLSkGF6x');
+      const orderBtn = document.getElementById('order-btn');
+      orderBtn.addEventListener('click', function () {
+      stripe.redirectToCheckout({ sessionId: '{{sessionId}}' }); });
+    </script>
+  </div>
+</main>
